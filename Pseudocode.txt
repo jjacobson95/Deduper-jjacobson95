@@ -1,0 +1,64 @@
+Deduper pseudocode:
+
+Problem: Amplification during library prep leads to PCR duplicates. This may cause issues in downstream analysis. Our goal is to remove them. Ideally only the best copy should be kept.
+
+
+
+Startup:
+•	Shebang line: #!/usr/bin/env python 3.9
+•	Import my usual stuff: Bioinfo.py, argparse, matplotlib, gzip if needed.
+•	Import SAM file and UMI file with argparse
+
+
+Write Function 1: 
+Clip_check
+	This function checks if a read has been clipped. Input is (CIGAR)
+	If this has been clipped it will return read_has_been_clipped = True
+If this has not been clipped it will return read_has_been_clipped = False
+This will also check if the read was clipped at the start or end. Location = Start, End, NA
+Example: Input: 54M1266N17M
+	Output: read_has_been_clipped = False, Location = NA
+
+Write Function 2:
+	Clipped_start_position_finder
+	This function will calculate the start position of a read based on its cigar string.
+	Insertion = ignore, deletion = add, softclip-start = subtract, softclip-end = add
+	NOTE: I am unsure of the line above. Please lmk if i am wrong. <3
+	In: CIGAR, position, Location
+	Out: True Position
+Example: Input(CIGAR=2S40M1I30M and position=100 and Location = Start)
+	Perform: 100 – 2 = 98
+	Output: position = 98
+
+Write Function 3:
+	Best_Duplicate
+	This function will compare two duplicates and take the most complete duplicate to keep. This is based off which one is not soft-clipped / has fewest INDELS /fewest N’s in sequence
+	In: Two sequences
+	Out: The better sequence
+Example: Input:Sequence 1: 71M
+	       Sequence 2: 70M2I
+	Output: Sequence 1
+
+
+Then start code code:
+
+Read UMIs into a dictionary
+Create dictionary “PCR_deduped”
+
+For loop:
+•For each line in SAM file:
+	Separate line into list using .split
+	Toss if Qname doesn’t include correct UMI
+		Then go back to top of loop
+	Run Clip_check
+	If read_has_been_clipped == TRUE
+		Run Clipped_start_postion_finder
+	Check identifiers: Rname, position, strand
+	If these have a matching value in PCR_deduped:
+		Run Best_Duplicate
+	If these don’t have a matching value: add to PCR_deduped
+•Write out to file
+
+
+I think this is everything…
+
