@@ -2,7 +2,7 @@ Deduper pseudocode:
 
 Problem: Amplification during library prep leads to PCR duplicates. This may cause issues in downstream analysis. Our goal is to remove them. Ideally only the best copy should be kept.
 
-
+step 1) samtools sort?
 
 Startup:
 •	Shebang line: #!/usr/bin/env python 3.9
